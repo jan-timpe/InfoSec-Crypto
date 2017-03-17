@@ -16,8 +16,8 @@ exchange_keys(alice, bob)
 
 msg = "bite my shiny metal ass"
 
-# ciphertext = alice.write_message("bite my shiny metal ass")
-# print("MSG: "+str(bob.read_message()))
+ciphertext = alice.write_message(msg)
+print("MSG: "+str(bob.read_message()))
 
 
 # signature = alice.rsa_sign(msg, 16)

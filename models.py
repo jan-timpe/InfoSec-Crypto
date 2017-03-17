@@ -5,10 +5,6 @@ from Crypto.Cipher import AES
 from Crypto.Hash import SHA256 
 from Crypto.PublicKey import RSA
 
-BS = 16
-pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
-unpad = lambda s : s[0:-s[-1]]
-
 def generate_secret_key(size, chars=string.ascii_uppercase + string.digits):
     secret = Random.new().read(size)
     return secret
@@ -37,7 +33,7 @@ class User:
         self.shared_key = key
         
     def create_shared_key(self):
-        key = generate_secret_key(16)
+        key = generate_secret_key(AES.block_size)
         self.set_shared_key(key)
             
     def public_key(self):
@@ -65,12 +61,11 @@ class User:
         init_vector = Random.new().read(AES.block_size)
         cipher = AES.new(self.shared_key, AES.MODE_CFB, init_vector)
         encrypted_msg = init_vector + cipher.encrypt(msg_txt)
-        print("ENC: "+str(encrypted_msg))
         return encrypted_msg
         
     def aes_decrypt(self, ciphertext):
-        init_vector = ciphertext[:BS]
-        encrypted_msg = ciphertext[BS:]
+        init_vector = ciphertext[:AES.block_size]
+        encrypted_msg = ciphertext[AES.block_size:]
         cipher = AES.new(self.shared_key, AES.MODE_CFB, init_vector)
         plain_msg = cipher.decrypt(encrypted_msg)
         return plain_msg

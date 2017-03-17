@@ -51,9 +51,15 @@ class User:
         plain_msg = self.key_pair.decrypt(ast.literal_eval(str(encrypted_msg)))
         return plain_msg
         
-    def rsa_sign_hash(self, message_hash, k):
+    def rsa_sign(self, message_txt, k):
+        message_hash = hash_message(message_txt)
         signed_hash = self.key_pair.sign(message_hash, k)
         return signed_hash
+        
+    def rsa_auth(self, message_txt, signed_hash, pub_key):
+        message_hash = hash_message(message_txt)
+        is_verified = pub_key.verify(message_hash, signed_hash)
+        return is_verified
         
     def aes_encrypt(self, msg_txt):
         init_vector = Random.new().read(AES.block_size)
@@ -67,7 +73,6 @@ class User:
         encrypted_msg = ciphertext[BS:]
         cipher = AES.new(self.shared_key, AES.MODE_CFB, init_vector)
         plain_msg = cipher.decrypt(encrypted_msg)
-        print("DEC: "+str(plain_msg))
         return plain_msg
         
     def write_message(self, msg):
@@ -77,14 +82,4 @@ class User:
     def read_message(self):
         encrypted_msg = read_from_file()
         plain_msg = self.aes_decrypt(encrypted_msg)
-        return plain_msg.decode('utf-8', errors="ignore")
-        
-    def hmac_sign(self, message_txt):
-        message_hash = hash_message(message_txt)
-        signed_hash = self.rsa_sign_hash(message_hash, 16)
-        return signed_hash
-        
-    def hmac_auth(self, message_txt, signed_hash, pub_key):
-        message_hash = hash_message(message_txt)
-        is_verified = pub_key.verify(message_hash, signed_hash)
-        return is_verified
+        return plain_msg.decode('utf-8')

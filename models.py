@@ -13,6 +13,10 @@ def generate_secret_key(size, chars=string.ascii_uppercase + string.digits):
     secret = Random.new().read(size)
     return secret
     
+def hash_message(message_txt):
+    message_hash = hashlib.sha256(message_txt.encode()).digest()
+    return message_hash
+    
 def write_to_file(txt):
     f = open("messages.txt", "wb")
     f.write(txt)
@@ -31,7 +35,6 @@ class User:
         
     def set_shared_key(self, key):
         self.shared_key = key
-        # self.shared_key = hashlib.sha256(key).digest()
         
     def create_shared_key(self):
         key = generate_secret_key(16)
@@ -42,18 +45,19 @@ class User:
         
     def rsa_encrypt(self, msg_txt, k, public_key):
         encrypted_msg = public_key.encrypt(msg_txt, k)
-        # print("ENC: "+str(encrypted_msg[0])) # debug
         return encrypted_msg[0]
     
     def rsa_decrypt(self, encrypted_msg):
         plain_msg = self.key_pair.decrypt(ast.literal_eval(str(encrypted_msg)))
-        # print("DEC: "+str(plain_msg)) # debug
         return plain_msg
+        
+    def rsa_sign_hash(self, message_hash, k):
+        signed_hash = self.key_pair.sign(message_hash, k)
+        return signed_hash
         
     def aes_encrypt(self, msg_txt):
         init_vector = Random.new().read(AES.block_size)
         cipher = AES.new(self.shared_key, AES.MODE_CFB, init_vector)
-        # encrypted_msg = cipher.encrypt(pad(msg_txt))
         encrypted_msg = init_vector + cipher.encrypt(msg_txt)
         print("ENC: "+str(encrypted_msg))
         return encrypted_msg
@@ -62,20 +66,25 @@ class User:
         init_vector = ciphertext[:BS]
         encrypted_msg = ciphertext[BS:]
         cipher = AES.new(self.shared_key, AES.MODE_CFB, init_vector)
-        # plain_msg = unpad(cipher.decrypt(encrypted_msg))
         plain_msg = cipher.decrypt(encrypted_msg)
         print("DEC: "+str(plain_msg))
         return plain_msg
         
     def write_message(self, msg):
         encrypted_msg = self.aes_encrypt(msg)
-        # write_to_file(base64.b64encode(encrypted_msg))
         write_to_file(encrypted_msg)
-        print("WRITE: "+str(encrypted_msg)) # debug
         
     def read_message(self):
-        # line = base64.b64decode(read_from_file())
         encrypted_msg = read_from_file()
-        print("READ: " + str(encrypted_msg))
         plain_msg = self.aes_decrypt(encrypted_msg)
         return plain_msg.decode('utf-8', errors="ignore")
+        
+    def hmac_sign(self, message_txt):
+        message_hash = hash_message(message_txt)
+        signed_hash = self.rsa_sign_hash(message_hash, 16)
+        return signed_hash
+        
+    def hmac_auth(self, message_txt, signed_hash, pub_key):
+        message_hash = hash_message(message_txt)
+        is_verified = pub_key.verify(message_hash, signed_hash)
+        return is_verified

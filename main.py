@@ -14,5 +14,12 @@ bob = User("Bob")
 
 exchange_keys(alice, bob)
 
-ciphertext = alice.write_message("bite my shiny metal ass")
-print("MSG: "+str(bob.read_message()))
+# ciphertext = alice.write_message("bite my shiny metal ass")
+# print("MSG: "+str(bob.read_message()))
+
+# msg = "bite my shiny metal ass"
+# signature = alice.hmac_sign(msg)
+# if bob.hmac_auth(msg, signature, alice.public_key()):
+#     print("passed")
+# else:
+#     print("failed")

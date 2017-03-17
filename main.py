@@ -16,12 +16,18 @@ exchange_keys(alice, bob)
 
 msg = "bite my shiny metal ass"
 
-ciphertext = alice.write_message(msg)
-print("MSG: "+str(bob.read_message()))
+# ciphertext = alice.write_message(msg)
+# print("MSG: "+str(bob.read_message()))
 
 
 # signature = alice.rsa_sign(msg, 16)
 # if bob.rsa_auth(msg, signature, alice.public_key()):
+#     print("passed")
+# else:
+#     print("failed")
+
+# signature = alice.hmac_sign(msg)
+# if bob.hmac_auth(msg, signature):
 #     print("passed")
 # else:
 #     print("failed")

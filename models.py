@@ -1,11 +1,11 @@
-import ast, base64, hashlib, random, string
+import ast, base64, hashlib, hmac, random, string
 import Crypto
 from Crypto import Random
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA256 
 from Crypto.PublicKey import RSA
 
-def generate_secret_key(size, chars=string.ascii_uppercase + string.digits):
+def generate_secret_key(size):
     secret = Random.new().read(size)
     return secret
     
@@ -78,3 +78,11 @@ class User:
         encrypted_msg = read_from_file()
         plain_msg = self.aes_decrypt(encrypted_msg)
         return plain_msg.decode('utf-8')
+        
+    def hmac_sign(self, message_txt):
+        signed_hash = hmac.new(self.shared_key, message_txt.encode(), hashlib.sha256).digest()
+        return signed_hash
+        
+    def hmac_auth(self, message_txt, signed_hash):
+        computed_hash = hmac.new(self.shared_key, message_txt.encode(), hashlib.sha256).digest()
+        return computed_hash == signed_hash

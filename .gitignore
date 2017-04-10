@@ -3,3 +3,6 @@ __pycache__/
 test.py
 *.pyc
 messages.txt
+submission/
+*.pages
+*.pdf
